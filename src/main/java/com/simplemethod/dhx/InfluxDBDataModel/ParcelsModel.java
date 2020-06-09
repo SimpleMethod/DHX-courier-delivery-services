@@ -14,7 +14,7 @@ public class ParcelsModel {
     Instant parcel_id;
     @Column(name = "klient_id")
     Instant client_id;
-    @Column(name = "kierowca_id")
+    @Column(name = "kierowcy_id")
     Instant employee_id;
     @Column(name = "miasto")
     String miasto;
@@ -25,7 +25,7 @@ public class ParcelsModel {
     @Column(name = "ilosc_paczek")
     Integer ilosc_paczek;
     @Column(name = "pobranie")
-    Float pobranie;
+    Double pobranie;
     @Column(name = "identyfikator_rejonu_paczki")
     Integer identyfikator_rejonu_paczki;
 
@@ -85,11 +85,11 @@ public class ParcelsModel {
         this.ilosc_paczek = ilosc_paczek;
     }
 
-    public Float getPobranie() {
+    public Double getPobranie() {
         return pobranie;
     }
 
-    public void setPobranie(Float pobranie) {
+    public void setPobranie(Double pobranie) {
         this.pobranie = pobranie;
     }
 

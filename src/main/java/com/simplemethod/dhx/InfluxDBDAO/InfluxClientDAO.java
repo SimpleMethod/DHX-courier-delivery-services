@@ -37,30 +37,55 @@ public class InfluxClientDAO {
         this.influxDB = influxDB;
     }
 
+    /**
+     * Pobieranie wszystkich klientów z bazy danych.
+     * @return Listę z obietkami.
+     */
     public List<ClientModel> findAll() {
         InfluxDBMapper influxDBMapper = new InfluxDBMapper(influxDB);
         Query query = select().from("technologie", "klienci").orderBy(asc());
         return influxDBMapper.query(query, ClientModel.class);
     }
 
+    /**
+     *  Pobieranie klientów według numeru telefonu.
+     * @param phoneNumber numer telefonu klienta.
+     * @return Liste z obiektami.
+     */
     public List<ClientModel> findAllByPhoneNumber(Integer phoneNumber) {
         InfluxDBMapper influxDBMapper = new InfluxDBMapper(influxDB);
         Query query = select().from("technologie", "klienci").where(eq("telefon", phoneNumber)).orderBy(asc());
         return influxDBMapper.query(query, ClientModel.class);
     }
 
+    /**
+     * Pobiera klienta według imienia i nazwiska.
+     * @param name Imie klienta.
+     * @param surname Nazwisko klienta.
+     * @return Liste z obiektami.
+     */
     public List<ClientModel> findByNameAndSurname(String name, String surname) {
         InfluxDBMapper influxDBMapper = new InfluxDBMapper(influxDB);
         Query query = select().from("technologie", "klienci").where(eq("imie", name)).where(eq("nazwisko", surname)).orderBy(asc());
         return influxDBMapper.query(query, ClientModel.class);
     }
 
+    /**
+     * Pobiera obiekt klienta według indetyfikatora.
+     * @param uuid Identyfikator klienta.
+     * @return Obiekt z danymi klienta.
+     */
     public List<ClientModel> findByUUID(Long instant) {
         InfluxDBMapper influxDBMapper = new InfluxDBMapper(influxDB);
         Query query = select().from("technologie", "klienci").where(eq("time", instant)).orderBy(asc());
         return influxDBMapper.query(query, ClientModel.class);
     }
 
+    /**
+     *  Aktualizuje imię klienta.
+     * @param imie Nowe imie klienta.
+     * @param instant Indetyfikator klienta.
+     */
     public void setNameByUUID(String imie, Long instant) {
         //InfluxDB does not support UPDATE statements.
         InfluxDBMapper influxDBMapper = new InfluxDBMapper(influxDB);
@@ -80,10 +105,23 @@ public class InfluxClientDAO {
         }
     }
 
+    /**
+     * Usuwa kliena.
+     * @param instant Identyfikator klienta.
+     */
     public void removeByUUID(Long instant) {
         influxDB.query(new Query("DELETE FROM klienci WHERE time=" + instant));
     }
 
+    /**
+     * Dodaje nowego klienta do bazy danych.
+     * @param imie Imie klienta.
+     * @param nazwisko Nazwisko klienta.
+     * @param miasto Miasto.
+     * @param ulica Ulica.
+     * @param numerDomu Numer domu.
+     * @param telefon Telefon.
+     */
     public void saveCustomer(String imie, String nazwisko, String miasto, String ulica, Integer numerDomu, Integer telefon) {
         Point point = Point.measurement("klienci").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("imie", imie).addField("nazwisko", nazwisko)

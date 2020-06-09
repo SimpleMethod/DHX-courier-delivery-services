@@ -37,13 +37,6 @@ public class CassandraConfig {
         } else {
             System.out.println("An error occurred.");
         }
-
-       // UuidCodec uuidCodec = new UuidCodec();
-       // UUID xd = uuidCodec.parse("17b8e620-a8b2-11ea-a04d-7336f4620af4");
-        //removeByUUIDAndPhoneNumber(xd,413742137);
-        //setNameByUUIDAndPhoneNumber("Andrzej",xd,413424444);
-        //ClientModel kd = findByUUID(xd);
-        //System.out.println(kd.toString());
     }
 
 

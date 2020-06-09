@@ -51,9 +51,9 @@ public class ParcelsDAO {
     }
 
     /**
-     * Pobieranie packzi
-     * @param employeeUUID
-     * @return
+     * Pobieranie packzi po identyfikatorze pracownika.
+     * @param employeeUUID Identyfikator pracownika.
+     * @return Obiekt paczki.
      */
     public ArrayList<ParcelsModel> findByEmployee(UUID employeeUUID) {
         ArrayList<ParcelsModel> arrayListCity = new ArrayList<>();
@@ -67,6 +67,11 @@ public class ParcelsDAO {
         return arrayListCity;
     }
 
+    /**
+     * Pobieranie packzi po identyfikatorze klienta.
+     * @param clientUUID Identyfikator klienta.
+     * @return Obiekt paczki.
+     */
     public ArrayList<ParcelsModel> findByClient(UUID clientUUID) {
         ArrayList<ParcelsModel> arrayListCity = new ArrayList<>();
         ArrayList<ParcelsModel> arrayList;
@@ -98,9 +103,9 @@ public class ParcelsDAO {
 
     /**
      *  Aktualizacja miasta docelowego paczki.
-     * @param city Nowe miasto
-     * @param uuid
-     * @param trackingID
+     * @param city Nowe miasto.
+     * @param uuid  Identyfikator paczki.
+     * @param trackingID Identyfikator sortowni paczki.
      */
     public void setCityByUUIDAndTrackingID(String city, UUID uuid, Integer trackingID) {
         session.execute("UPDATE paczki SET miasto='" + city + "'WHERE paczka_id=" + uuid + "AND identyfikator_rejonu_paczki=" + trackingID);

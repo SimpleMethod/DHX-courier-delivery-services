@@ -15,19 +15,7 @@ public class MyCommand implements Runnable {
     @Autowired
     MainViewInfluxDB mainViewInfluxDB;
 
-    @CommandLine.Option(names = {"-ip", "--ipaddress"}, description = "Server IP address.")
-    private String[] ipAddress = new String[]{"localhost"};
-
-    @CommandLine.Option(names = {"-l", "--login"}, description = "Login to database.")
-    private String[] login = new String[]{"dev"};
-
-    @CommandLine.Option(names = {"-p", "--password"}, description = "Password to database.")
-    private String[] password = new String[]{"dev2137"};
-
-    @CommandLine.Option(names = {"-b", "--bucket"}, description = "Bucket name.")
-    private String[] bucket = new String[]{"university","universityLecturer"};
-
-    @CommandLine.Option(names = {"-t", "--type"}, description = "Type of database M=MongoDB C=Couchbase")
+    @CommandLine.Option(names = {"-t", "--type"}, description = "Type of database I=InfluxDB C=Cassandra")
     private String[] type = new String[]{"C"};
 
     @SneakyThrows
@@ -35,13 +23,9 @@ public class MyCommand implements Runnable {
 
         if(type[0].equals("C") || type[0].equals("c"))
         {
-            if(bucket.length!=2)
-            {
-                System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Brak wymaganych danych!|@"));
-                System.exit(1);
-            }
-           //mainViewCassandra.menu();
-            mainViewInfluxDB.menu();
+
+           mainViewCassandra.menu();
+           // mainViewInfluxDB.menu();
         }
         else if(type[0].equals("I") || type[0].equals("i"))
         {
