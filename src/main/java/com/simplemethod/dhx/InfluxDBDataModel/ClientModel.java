@@ -4,6 +4,7 @@ import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -85,7 +86,7 @@ public class ClientModel {
     @Override
     public String toString() {
         return
-                "Identyfikator klienta:" + client_id.toEpochMilli() +
+                "Identyfikator klienta:" + String.format("%019d", BigInteger.valueOf(client_id.toEpochMilli())) +
                         "\r\n Imie:" + name +
                         "\r\n Nazwisko:" + nazwisko +
                         "\r\n Miasto:" + miasto +

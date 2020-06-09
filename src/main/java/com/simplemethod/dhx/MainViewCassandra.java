@@ -58,7 +58,8 @@ public class MainViewCassandra {
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(blue)  [8]|@ Zmiana miasta docelowego paczki"));
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(blue)  [9]|@ Wyszukiwanie wszystkich kierowców"));
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(blue)  [10]|@ Dodanie nowego kierowcy"));
-            System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red)  [11]|@ Zamknięcie programu"));
+            System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(blue)  [11]|@ Dodanie nowej paczki"));
+            System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red)  [12]|@ Zamknięcie programu"));
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             String input = br.readLine();
             if (isNumeric(input)) {
@@ -89,6 +90,8 @@ public class MainViewCassandra {
                         setCityParcels();
                         break;
                     case 11:
+                        addNewParcels();
+                    case 12:
                         Runtime.getRuntime().exit(1);
                         break;
                     case 9:
@@ -186,6 +189,44 @@ public class MainViewCassandra {
         }
         if (isNumeric(phoneNumber) ) {
             employeeDAO.saveEmployee(firstName, secondName, Integer.parseInt(phoneNumber));
+        } else {
+            System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Numer telefonu być liczbą!|@"));
+        }
+    }
+
+    public  void addNewParcels() throws  IOException
+    {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(white) Menu dodawania nowej paczki|@"));
+        System.out.print("\n");
+        System.out.println("Identyfikator rejonu paczki:");
+        String trackingID = br.readLine();
+        System.out.println("Identyfikator klienta:");
+        String clientID= br.readLine();
+        System.out.println("Identyfikator kierowcy:");
+        String employeeID = br.readLine();
+        System.out.println("Miasto:");
+        String city = br.readLine();
+        System.out.println("Ulica:");
+        String street = br.readLine();
+        System.out.println("Numer domu:");
+        String houseNumber = br.readLine();
+        System.out.println("Ilosc paczek:");
+        String numberOfParcels = br.readLine();
+        System.out.println("Kwota pobrania:");
+        String cost = br.readLine();
+        try {
+            if (trackingID == null || clientID == null || employeeID==null || city==null || street==null || houseNumber==null || numberOfParcels==null || cost==null) {
+                System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Dane nie mogą być puste!|@"));
+                return;
+            }
+        } catch (NullPointerException e) {
+            System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Dane nie mogą być puste!|@"));
+            return;
+        }
+        if (isNumeric(trackingID)) {
+            UuidCodec uuidCodec = new UuidCodec();
+            parcelsDAO.saveParcels(uuidCodec.parse(clientID),uuidCodec.parse(employeeID),city,street,Integer.parseInt(houseNumber),Integer.parseInt(numberOfParcels),Float.parseFloat(cost),Integer.parseInt(trackingID));
         } else {
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Numer telefonu być liczbą!|@"));
         }

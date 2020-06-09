@@ -4,6 +4,7 @@ import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -16,7 +17,7 @@ public class EmployeeModel {
     String imie;
     @Column(name = "nazwisko")
     String nazwisko;
-    @Column(name = "nazwisko")
+    @Column(name = "telefon")
     Integer telefon;
 
 
@@ -54,7 +55,7 @@ public class EmployeeModel {
 
     @Override
     public String toString() {
-        return "Identyfikator pracownika=" + employee_id.toEpochMilli() +
+        return "Identyfikator pracownika:" +  String.format("%019d", BigInteger.valueOf(employee_id.toEpochMilli())) +
                 "\r\n Imie:" + imie  +
                 "\r\n Nazwisko:" + nazwisko +
                 "\r\n Telefon:" + telefon;

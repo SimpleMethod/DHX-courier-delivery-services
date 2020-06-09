@@ -3,6 +3,7 @@ package com.simplemethod.dhx.InfluxDBDataModel;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -102,9 +103,9 @@ public class ParcelsModel {
 
     @Override
     public String toString() {
-        return "\r\n Identyfkator paczki:" + parcel_id.toEpochMilli() +
-                "\r\n Identyfikator klienta:" + client_id.toEpochMilli() +
-                "\r\n Identyfikator kierowcy:" + employee_id.toEpochMilli() +
+        return "\r\n Identyfkator paczki:" +  String.format("%019d", BigInteger.valueOf(parcel_id.toEpochMilli())) +
+                "\r\n Identyfikator klienta:" +  String.format("%019d", BigInteger.valueOf(client_id.toEpochMilli())) +
+                "\r\n Identyfikator kierowcy:" +  String.format("%019d", BigInteger.valueOf(employee_id.toEpochMilli())) +
                 "\r\n Miasto:" + miasto  +
                 "\r\n Ulica:" + ulica +
                 "\r\n Numer domu:" + numer_domu +
