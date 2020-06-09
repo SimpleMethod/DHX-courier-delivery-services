@@ -51,4 +51,12 @@ public class EmployeeModel {
     public void setTelefon(Integer telefon) {
         this.telefon = telefon;
     }
+
+    @Override
+    public String toString() {
+        return "Identyfikator pracownika=" + employee_id.toEpochMilli() +
+                "\r\n Imie:" + imie  +
+                "\r\n Nazwisko:" + nazwisko +
+                "\r\n Telefon:" + telefon;
+    }
 }

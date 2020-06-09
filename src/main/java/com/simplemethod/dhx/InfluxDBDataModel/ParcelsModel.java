@@ -99,4 +99,18 @@ public class ParcelsModel {
     public void setIdentyfikator_rejonu_paczki(Integer identyfikator_rejonu_paczki) {
         this.identyfikator_rejonu_paczki = identyfikator_rejonu_paczki;
     }
+
+    @Override
+    public String toString() {
+        return "\r\n Identyfkator paczki:" + parcel_id.toEpochMilli() +
+                "\r\n Identyfikator klienta:" + client_id.toEpochMilli() +
+                "\r\n Identyfikator kierowcy:" + employee_id.toEpochMilli() +
+                "\r\n Miasto:" + miasto  +
+                "\r\n Ulica:" + ulica +
+                "\r\n Numer domu:" + numer_domu +
+                "\r\n Ilosc paczek:" + ilosc_paczek +
+                "\r\n Kwota pobrania:" + pobranie +
+                "\r\n Identyfikator rejonu paczki:" + identyfikator_rejonu_paczki
+                ;
+    }
 }

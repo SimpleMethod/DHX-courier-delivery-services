@@ -51,9 +51,9 @@ public class EmployeeModel {
 
     @Override
     public String toString() {
-        return "employee_id=" + employee_id +
+        return "Identyfikator pracownika=" + employee_id +
                 "\r\n Imie:" + imie  +
-                ",\r\n Nazwisko:" + nazwisko +
+                "\r\n Nazwisko:" + nazwisko +
                 "\r\n Telefon:" + telefon;
     }
 }

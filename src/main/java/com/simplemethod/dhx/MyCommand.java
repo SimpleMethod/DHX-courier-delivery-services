@@ -40,7 +40,8 @@ public class MyCommand implements Runnable {
                 System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Brak wymaganych danych!|@"));
                 System.exit(1);
             }
-            mainViewCassandra.menu();
+           //mainViewCassandra.menu();
+            mainViewInfluxDB.menu();
         }
         else if(type[0].equals("I") || type[0].equals("i"))
         {

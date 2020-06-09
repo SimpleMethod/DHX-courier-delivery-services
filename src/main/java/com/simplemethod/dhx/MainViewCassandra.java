@@ -1,15 +1,13 @@
 package com.simplemethod.dhx;
 
-
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.internal.core.type.codec.UuidCodec;
-import com.simplemethod.dhx.InfluxDBDataModel.ParcelsModel;
-import com.simplemethod.dhx.InfluxDBDataModel.EmployeeModel;
-import com.simplemethod.dhx.InfluxDBDAO.InfluxClientDAO;
-import com.simplemethod.dhx.InfluxDBDAO.InfluxEmployeeDAO;
-import com.simplemethod.dhx.InfluxDBDAO.InfluxParcelsDAO;
-import com.simplemethod.dhx.InfluxDBDataModel.ClientModel;
-import org.influxdb.InfluxDB;
-import org.influxdb.dto.Point;
+import com.simplemethod.dhx.CassandraDataModel.EmployeeModel;
+import com.simplemethod.dhx.cassandraDAO.ClientDAO;
+import com.simplemethod.dhx.cassandraDAO.EmployeeDAO;
+import com.simplemethod.dhx.cassandraDAO.ParcelsDAO;
+import com.simplemethod.dhx.CassandraDataModel.ClientModel;
+import com.simplemethod.dhx.CassandraDataModel.ParcelsModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import picocli.CommandLine;
@@ -17,37 +15,35 @@ import picocli.CommandLine;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @Controller
-public class MainViewInfluxDB {
+public class MainViewCassandra {
 
-    private InfluxDB influxDB;
-
-    @Autowired
-    InfluxDBConfig influxDBConfig;
+    private CqlSession session;
 
     @Autowired
-    InfluxClientDAO influxClientDAO;
+    CassandraConfig cassandraConfig;
 
     @Autowired
-    InfluxEmployeeDAO influxEmployeeDAO;
+    ClientDAO clientDAO;
 
     @Autowired
-    InfluxParcelsDAO influxParcelsDAO;
+    EmployeeDAO employeeDAO;
+
+    @Autowired
+    ParcelsDAO parcelsDAO;
 
     public void menu() throws IOException {
-        influxDBConfig.init();
-        influxDB = influxDBConfig.getInfluxDB();
-        influxClientDAO.setInfluxDB(influxDB);
-        influxEmployeeDAO.setInfluxDB(influxDB);
-        influxParcelsDAO.setInfluxDB(influxDB);
+        cassandraConfig.init();
+        session = cassandraConfig.getSession();
+        clientDAO.setSession(session);
+        employeeDAO.setSession(session);
+        parcelsDAO.setSession(session);
+
         for (; ; ) {
             System.out.print("\n");
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(green) Wybierz pozycję z menu:|@"));
@@ -59,11 +55,10 @@ public class MainViewInfluxDB {
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(blue)  [5]|@ Zmiana imienia klienta"));
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(blue)  [6]|@ Usunięcie klienta"));
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(blue)  [7]|@ Wyszukwanie złozone paczki według imienia i nazwiska klienta"));
-            System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(blue)  [8]|@ Zmiana numeru rejoniu docelowego paczki "));
+            System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(blue)  [8]|@ Zmiana miasta docelowego paczki"));
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(blue)  [9]|@ Wyszukiwanie wszystkich kierowców"));
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(blue)  [10]|@ Dodanie nowego kierowcy"));
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red)  [11]|@ Zamknięcie programu"));
-
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             String input = br.readLine();
             if (isNumeric(input)) {
@@ -93,14 +88,14 @@ public class MainViewInfluxDB {
                     case 8:
                         setCityParcels();
                         break;
-                    case 10:
-                        addNewEmployee();
-                        break;
                     case 11:
                         Runtime.getRuntime().exit(1);
                         break;
                     case 9:
                         findAllEmployee();
+                        break;
+                    case 10:
+                        addNewEmployee();
                         break;
                     default:
                         break;
@@ -109,17 +104,18 @@ public class MainViewInfluxDB {
         }
     }
 
-    public void findAllEmployee() {
-        List<EmployeeModel> clientModels = influxEmployeeDAO.findAll();
+    public void findAllEmployee()
+    {
+        ArrayList<EmployeeModel> clientModels = employeeDAO.findAll();
         clientModels.forEach(cl -> System.out.println(cl.toString() + "\r\n"));
     }
 
     public void findAllClients() {
-        List<ClientModel> clientModels = influxClientDAO.findAll();
+        ArrayList<ClientModel> clientModels = clientDAO.findAll();
         clientModels.forEach(cl -> System.out.println(cl.toString() + "\r\n"));
     }
 
-    public void findEmployeesByPhoneNumber() throws IOException {
+    public void findEmployeesByPhoneNumber()  throws IOException  {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(white) Menu wyszukiwania kierowców|@"));
         System.out.println("Telefon kierowcy:");
@@ -134,10 +130,11 @@ public class MainViewInfluxDB {
             return;
         }
 
-        if (isNumeric(phoneNumber)) {
-            List<EmployeeModel> employeeModels = influxEmployeeDAO.findAllByPhoneNumber(Integer.parseInt(phoneNumber));
+        if (isNumeric(phoneNumber) ) {
+            ArrayList<EmployeeModel> employeeModels = employeeDAO.findAllByPhoneNumber(Integer.parseInt(phoneNumber));
             employeeModels.forEach(cl -> System.out.println(cl.toString() + "\r\n"));
-            if (employeeModels.isEmpty()) {
+            if(employeeModels.isEmpty())
+            {
                 System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Brak kierowcy o podanym numerze!|@"));
             }
         } else {
@@ -147,18 +144,18 @@ public class MainViewInfluxDB {
     }
 
     public void findAllParcels() {
-        List<ParcelsModel> parcelsModels = influxParcelsDAO.findAll();
+        ArrayList<ParcelsModel> parcelsModels = parcelsDAO.findAll();
         for (ParcelsModel parcelsModel : parcelsModels) {
-            List<ClientModel> clientModel = influxClientDAO.findByUUID(parcelsModel.getClient_id().toEpochMilli());
-            List<EmployeeModel> employeeModel = influxEmployeeDAO.findByUUID(parcelsModel.getEmployee_id().toEpochMilli());
+            ClientModel clientModel = clientDAO.findByUUID(parcelsModel.getClient_id());
+            EmployeeModel employeeModel = employeeDAO.findByUUID(parcelsModel.getEmployee_id());
             System.out.println("Identyfikator rekordu:" + parcelsModel.getParcel_id());
             System.out.println("Identyfikator rejonu paczki:" + parcelsModel.getIdentyfikator_rejonu_paczki());
-            System.out.println("Imie klienta:" + clientModel.get(0).getName());
-            System.out.println("Nazwisko klienta:" + clientModel.get(0).getNazwisko());
-            System.out.println("Telefon klienta:" + clientModel.get(0).getTelefon());
-            System.out.println("Imie kuriera:" + employeeModel.get(0).getImie());
-            System.out.println("Nazwisko kuriera:" + employeeModel.get(0).getNazwisko());
-            System.out.println("Telefon kuriera:" + employeeModel.get(0).getTelefon());
+            System.out.println("Imie klienta:" + clientModel.getImie());
+            System.out.println("Nazwisko klienta:" + clientModel.getNazwisko());
+            System.out.println("Telefon klienta:" + clientModel.getTelefon());
+            System.out.println("Imie kuriera:" + employeeModel.getImie());
+            System.out.println("Nazwisko kuriera:" + employeeModel.getNazwisko());
+            System.out.println("Telefon kuriera:" + employeeModel.getTelefon());
             System.out.println("Miasto:" + parcelsModel.getMiasto());
             System.out.println("Ulica:" + parcelsModel.getUlica());
             System.out.println("Numer domu/mieszkania:" + parcelsModel.getNumer_domu());
@@ -167,7 +164,8 @@ public class MainViewInfluxDB {
         }
     }
 
-    public void addNewEmployee() throws IOException {
+    public void  addNewEmployee()throws IOException
+    {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(white) Menu dodawania nowego klienta|@"));
         System.out.print("\n");
@@ -178,7 +176,7 @@ public class MainViewInfluxDB {
         System.out.println("Telefon:");
         String phoneNumber = br.readLine();
         try {
-            if (firstName == null || secondName == null || phoneNumber.isEmpty()) {
+            if (firstName == null || secondName == null ||  phoneNumber.isEmpty()) {
                 System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Dane nie mogą być puste!|@"));
                 return;
             }
@@ -186,8 +184,8 @@ public class MainViewInfluxDB {
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Dane nie mogą być puste!|@"));
             return;
         }
-        if (isNumeric(phoneNumber)) {
-            influxEmployeeDAO.saveEmployee(firstName, secondName, Integer.parseInt(phoneNumber));
+        if (isNumeric(phoneNumber) ) {
+            employeeDAO.saveEmployee(firstName, secondName, Integer.parseInt(phoneNumber));
         } else {
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Numer telefonu być liczbą!|@"));
         }
@@ -222,7 +220,7 @@ public class MainViewInfluxDB {
         }
 
         if (isNumeric(phoneNumber) && isNumeric(houseNumber)) {
-            influxClientDAO.saveCustomer(firstName, secondName, city, street, Integer.parseInt(houseNumber), Integer.parseInt(phoneNumber));
+            clientDAO.saveCustomer(firstName, secondName, city, street, Integer.parseInt(houseNumber), Integer.parseInt(phoneNumber));
         } else {
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Numer telefonu oraz numer domu musi być liczbą!|@"));
         }
@@ -234,10 +232,12 @@ public class MainViewInfluxDB {
         System.out.print("\n");
         System.out.println("Imie:");
         String firstName = br.readLine();
+        System.out.println("Telefon:");
+        String phoneNumber = br.readLine();
         System.out.println("Identyfikator klienta:");
         String uuid = br.readLine();
         try {
-            if (firstName == null || uuid == null) {
+            if (firstName == null || uuid == null || phoneNumber.isEmpty()) {
                 System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Dane nie mogą być puste!|@"));
                 return;
             }
@@ -245,17 +245,25 @@ public class MainViewInfluxDB {
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Dane nie mogą być puste!|@"));
             return;
         }
-        BigInteger bigInteger = new BigInteger(uuid);
-        influxClientDAO.setNameByUUID(firstName, bigInteger.longValue());
+        if (isNumeric(phoneNumber)) {
+            UuidCodec uuidCodec = new UuidCodec();
+            UUID client = uuidCodec.parse(uuid);
+            clientDAO.setNameByUUIDAndPhoneNumber(firstName, client, Integer.parseInt(phoneNumber));
+        } else {
+            System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Numer telefonu musi być liczbą!|@"));
+        }
     }
 
-    void removeClient() throws IOException {
+    void removeClient() throws IOException
+    {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Usuwanie klienta|@"));
+        System.out.println("Telefon:");
+        String phoneNumber = br.readLine();
         System.out.println("Identyfikator klienta:");
         String uuid = br.readLine();
         try {
-            if (uuid == null) {
+            if (uuid == null || phoneNumber.isEmpty()) {
                 System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Dane nie mogą być puste!|@"));
                 return;
             }
@@ -263,8 +271,14 @@ public class MainViewInfluxDB {
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Dane nie mogą być puste!|@"));
             return;
         }
-        BigInteger bigInteger = new BigInteger(uuid);
-        influxClientDAO.removeByUUID(bigInteger.longValue());
+
+        if (isNumeric(phoneNumber)) {
+            UuidCodec uuidCodec = new UuidCodec();
+            UUID client = uuidCodec.parse(uuid);
+            clientDAO.removeByUUIDAndPhoneNumber(client, Integer.parseInt(phoneNumber));
+        } else {
+            System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Numer telefonu musi być liczbą!|@"));
+        }
     }
 
     public void findAllParcelsByNameAndSurname() throws IOException {
@@ -276,29 +290,34 @@ public class MainViewInfluxDB {
         System.out.println("Nazwisko:");
         String secondName = br.readLine();
 
-        List<ClientModel> clientModel = influxClientDAO.findByNameAndSurname(firstName, secondName);
-        if (clientModel != null && !clientModel.isEmpty()) {
-            Instant instant = clientModel.get(0).getClient_id();
-            List<ParcelsModel> parcelsModels = influxParcelsDAO.findByClient(instant.toEpochMilli());
+        ClientModel clientModel = clientDAO.findByNameAndSurname(firstName, secondName);
+        if (clientModel != null) {
+            UUID client_ID = clientModel.getClient_id();
+            ArrayList<ParcelsModel> parcelsModels = parcelsDAO.findByClient(client_ID);
             for (ParcelsModel parcelsModel : parcelsModels) {
                 System.out.println(parcelsModel.toString() + "\r\n");
             }
-            if (parcelsModels.isEmpty()) {
+            if(parcelsModels.isEmpty())
+            {
                 System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Brak paczek dla podanego klienta!|@"));
             }
         }
     }
 
-    void setCityParcels() throws IOException {
+    void setCityParcels() throws  IOException
+    {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(white) Menu zmiany miasta docelowego paczki|@"));
         System.out.print("\n");
-        System.out.println("Nowy identyfikator rejonu paczki:");
+        System.out.println("Miasto:");
+        String city = br.readLine();
+        System.out.println("Identyfikator rejonu paczki:");
         String trackingID = br.readLine();
         System.out.println("Identyfikator paczki:");
         String uuid = br.readLine();
+
         try {
-            if (trackingID.isEmpty() || uuid == null) {
+            if (city == null || trackingID==null || uuid==null) {
                 System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Dane nie mogą być puste!|@"));
                 return;
             }
@@ -307,9 +326,9 @@ public class MainViewInfluxDB {
             return;
         }
         if (isNumeric(trackingID)) {
-
-            BigInteger bigInteger = new BigInteger(uuid);
-            influxParcelsDAO.setTrackingIDByID(Integer.parseInt(trackingID), bigInteger.longValue());
+            UuidCodec uuidCodec = new UuidCodec();
+            UUID parcels = uuidCodec.parse(uuid);
+            parcelsDAO.setCityByUUIDAndTrackingID(city,parcels,Integer.parseInt(trackingID));
         } else {
             System.out.println(CommandLine.Help.Ansi.AUTO.string("@|bold,fg(red) Numer telefonu musi być liczbą!|@"));
         }
@@ -330,5 +349,6 @@ public class MainViewInfluxDB {
         }
         return pattern.matcher(strNum).matches();
     }
+
 
 }

@@ -84,14 +84,13 @@ public class ClientModel {
 
     @Override
     public String toString() {
-        return "klienci{" +
-                "client_id=" + client_id +
-                ", imie='" + name + '\'' +
-                ", nazwisko='" + nazwisko + '\'' +
-                ", miasto='" + miasto + '\'' +
-                ", ulica='" + ulica + '\'' +
-                ", numer_domu=" + numer_domu +
-                ", telefon=" + telefon +
-                '}';
+        return
+                "Identyfikator klienta:" + client_id.toEpochMilli() +
+                        "\r\n Imie:" + name +
+                        "\r\n Nazwisko:" + nazwisko +
+                        "\r\n Miasto:" + miasto +
+                        "\r\n Ulica:" + ulica +
+                        "\r\n Numer domu:" + numer_domu +
+                        "\r\n Telefon:" + telefon;
     }
 }
